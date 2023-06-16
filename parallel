@@ -1,0 +1,25 @@
+#!/bin/sh
+
+# Check the number of arguments
+if [ $# -lt 2 ]; then
+  echo "Usage: $0 <times> <command> [args...]"
+  exit 1
+fi
+
+# Get the number of times to repeat and the command
+times=$1
+shift
+cmd=$@
+
+# Setup trap for SIGINT (Ctrl+C)
+trap 'pkill -P $$' INT
+
+# Repeat the command the specified number of times
+i=0
+while [ "$i" -lt "$times" ]; do
+  eval "$cmd &"
+  i=$((i + 1))
+done
+
+# Wait for all background processes to finish
+wait

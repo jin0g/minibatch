@@ -1,0 +1,41 @@
+#!/bin/sh
+
+# Check if the command file is provided
+if [ $# -eq 0 ]; then 
+  echo "Usage: $0 <command_file>"
+  exit 1
+fi
+
+# Get the command file
+CMDFILE=$1
+LOCKFILE=/tmp/runjobs-lockfile
+
+while true; do
+  # Attempt to acquire lock
+  if ( set -o noclobber; echo "$$" > "$LOCKFILE") 2> /dev/null; then
+    trap 'rm -f "$LOCKFILE"; exit $?' INT TERM EXIT
+
+    # Get the command from the command file
+    if [ -f "$CMDFILE" ]; then
+      CMD="$(head -n 1 "$CMDFILE")"
+      sed -i '1d' "$CMDFILE"
+    else
+      CMD=""
+    fi
+
+    # Release the lock
+    rm -f "$LOCKFILE"
+    trap - INT TERM EXIT
+
+    # End task if there's no command
+    if [ -z "$CMD" ]; then exit 0; fi
+
+    # Run the command
+    echo "$CMD"
+    eval "$CMD"
+
+    if [ ! $? -eq 0 ]; then exit 1; fi
+  fi
+
+  sleep 1
+done

@@ -1,0 +1,27 @@
+#!/bin/sh
+
+# Check if at least one argument is provided
+if [ $# -lt 1 ]; then
+  echo "Usage: $0 <command> [args...]"
+  exit 1
+fi
+
+# Get the number of GPUs
+N_GPUS=$(nvidia-smi -L | wc -l)
+
+while true; do
+  GPU=0
+  while [ "$GPU" -lt "$N_GPUS" ]; do
+    lock="/tmp/autocuda-$GPU"
+    if ( set -o noclobber; echo "$$" > "$lock") 2> /dev/null; then
+      trap 'rm -f "$lock"; exit $?' INT TERM EXIT
+      CMD="CUDA_VISIBLE_DEVICES=$GPU $@"
+      eval $CMD
+      rm -f "$lock"
+      trap - INT TERM EXIT
+      exit 0
+    fi
+    GPU=$((GPU + 1))
+  done
+  sleep 1
+done
