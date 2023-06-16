@@ -56,7 +56,7 @@ python train.py model5
 Then, you could use the parallel, autocuda, and runjobs commands together as follows:
 
 ```
-$ parallel 2 autocuda runjobs commands.txt
+$ parallel 2 allocuda runjobs commands.txt
 ```
 
 This command runs two instances of the runjobs script on commands.txt in parallel, each assigned to a different GPU by the autocuda script.
