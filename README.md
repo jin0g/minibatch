@@ -1,4 +1,4 @@
-# miniBatch
+# minibatch
 
 This repository contains three shell scripts to simplify running parallel processes on a system with one or more GPUs. The scripts are:
 
